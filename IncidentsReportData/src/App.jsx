@@ -9,7 +9,7 @@ import Dashboard from '../src/Pages/Dashboard/Dashboard';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/IncidentsReportData">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
