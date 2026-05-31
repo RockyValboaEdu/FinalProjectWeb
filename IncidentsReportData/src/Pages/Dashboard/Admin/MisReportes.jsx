@@ -42,13 +42,11 @@ const estadoConfig = {
 
 export default function MisReportes() {
     const navigate = useNavigate();
-
+    const [mobileOpen, setMobileOpen] = React.useState(false);
     const [userData, setUserData] = React.useState(null);
     const [reportes, setReportes] = React.useState([]);
     const [filtroEstado, setFiltroEstado] = React.useState('Todos');
     const [loading, setLoading] = React.useState(true);
-
-    // Estado para el dialog de cambio de estado
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [reporteSeleccionado, setReporteSeleccionado] = React.useState(null);
     const [nuevoEstado, setNuevoEstado] = React.useState('');
@@ -57,23 +55,19 @@ export default function MisReportes() {
     React.useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user) { navigate('/login'); return; }
-
             try {
                 const clientesRef = collection(db, 'ClientManagement');
                 const qUser = query(clientesRef, where('uid', '==', user.uid));
                 const userSnap = await getDocs(qUser);
-
                 if (!userSnap.empty) {
                     const data = userSnap.docs[0].data();
                     setUserData(data);
                     if (data.rol !== 'admin') { navigate('/dashboard-usuario'); return; }
                 }
-
                 const reportesRef = collection(db, 'Incidentes');
                 const qReportes = query(reportesRef, orderBy('fechaCreacion', 'desc'));
                 const reportesSnap = await getDocs(qReportes);
                 setReportes(reportesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-
             } catch (error) {
                 console.error('Error:', error);
             } finally {
@@ -84,8 +78,7 @@ export default function MisReportes() {
     }, [navigate]);
 
     const reportesFiltrados = filtroEstado === 'Todos'
-        ? reportes
-        : reportes.filter((r) => r.estado === filtroEstado);
+        ? reportes : reportes.filter((r) => r.estado === filtroEstado);
 
     const abrirDialogEditar = (reporte) => {
         setReporteSeleccionado(reporte);
@@ -97,10 +90,7 @@ export default function MisReportes() {
         if (!reporteSeleccionado || !nuevoEstado) return;
         setActualizando(true);
         try {
-            await updateDoc(doc(db, 'Incidentes', reporteSeleccionado.id), {
-                estado: nuevoEstado,
-            });
-            // Actualizar localmente
+            await updateDoc(doc(db, 'Incidentes', reporteSeleccionado.id), { estado: nuevoEstado });
             setReportes((prev) => prev.map((r) =>
                 r.id === reporteSeleccionado.id ? { ...r, estado: nuevoEstado } : r
             ));
@@ -121,38 +111,34 @@ export default function MisReportes() {
     }
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', background: '#f5f6fa' }}>
-            <Navbar userName={userData ? userData.nombres + ' ' + userData.apellidos : ''} rol="admin" />
-            <Sidebar rol="admin" />
+        <Box sx={{ display: 'flex', minHeight: '100vh', background: '#f5f6fa', overflow: 'hidden' }}>
+            <Navbar userName={userData ? userData.nombres + ' ' + userData.apellidos : ''} rol="admin" onMenuClick={() => setMobileOpen(true)} />
+            <Sidebar rol="admin" mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
-            <Box component="main" sx={{ flexGrow: 1, ml: DRAWER_WIDTH + 'px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Box component="main" sx={{
+                flexGrow: 1,
+                ml: { xs: 0, sm: `${DRAWER_WIDTH}px` },
+                display: 'flex', flexDirection: 'column', minHeight: '100vh',
+                maxWidth: { xs: '100vw', sm: `calc(100vw - ${DRAWER_WIDTH}px)` },
+                overflowX: 'hidden',
+            }}>
                 <Toolbar />
-                <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
+                <Box sx={{ flexGrow: 1, p: { xs: 2, sm: 3 }, width: '100%', boxSizing: 'border-box' }}>
 
                     <Typography sx={{ fontSize: '13px', color: '#888', mb: 2 }}>
                         Inicio / <span style={{ color: '#2e7d32', fontWeight: 600 }}>Mis Reportes</span>
                     </Typography>
 
                     <Card sx={{ borderRadius: '16px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0px 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-
-                        {/* Header */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 3, py: 2, borderBottom: '1px solid rgba(0,0,0,0.06)', flexWrap: 'wrap', gap: 1 }}>
                             <Box>
-                                <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#1a1a2e' }}>
-                                    Todos los Reportes
-                                </Typography>
-                                <Typography sx={{ fontSize: '12px', color: '#888' }}>
-                                    {reportesFiltrados.length} reporte(s) encontrado(s)
-                                </Typography>
+                                <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#1a1a2e' }}>Todos los Reportes</Typography>
+                                <Typography sx={{ fontSize: '12px', color: '#888' }}>{reportesFiltrados.length} reporte(s) encontrado(s)</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <FilterListIcon sx={{ color: '#888', fontSize: 20 }} />
                                 <FormControl size="small">
-                                    <Select
-                                        value={filtroEstado}
-                                        onChange={(e) => setFiltroEstado(e.target.value)}
-                                        sx={{ fontSize: '13px', borderRadius: '8px' }}
-                                    >
+                                    <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} sx={{ fontSize: '13px', borderRadius: '8px' }}>
                                         <MenuItem value="Todos">Todos</MenuItem>
                                         <MenuItem value="Reportado">Reportado</MenuItem>
                                         <MenuItem value="En Proceso">En Proceso</MenuItem>
@@ -162,13 +148,12 @@ export default function MisReportes() {
                             </Box>
                         </Box>
 
-                        {/* Tabla */}
-                        <TableContainer component={Paper} elevation={0}>
-                            <Table>
+                        <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', width: '100%' }}>
+                            <Table sx={{ minWidth: 480 }}>
                                 <TableHead>
                                     <TableRow sx={{ background: '#f9fafb' }}>
                                         {['Tipo', 'Descripción', 'Ubicación', 'Fecha', 'Estado', 'Acciones'].map((col) => (
-                                            <TableCell key={col} sx={{ fontWeight: 700, fontSize: '13px', color: '#555', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                                            <TableCell key={col} sx={{ fontWeight: 700, fontSize: '12px', color: '#555', borderBottom: '1px solid rgba(0,0,0,0.06)', whiteSpace: 'nowrap' }}>
                                                 {col}
                                             </TableCell>
                                         ))}
@@ -177,44 +162,33 @@ export default function MisReportes() {
                                 <TableBody>
                                     {reportesFiltrados.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={6} align="center" sx={{ py: 4, color: '#888' }}>
-                                                No hay reportes con ese filtro.
-                                            </TableCell>
+                                            <TableCell colSpan={6} align="center" sx={{ py: 4, color: '#888' }}>No hay reportes con ese filtro.</TableCell>
                                         </TableRow>
                                     ) : (
                                         reportesFiltrados.map((reporte) => {
                                             const estado = estadoConfig[reporte.estado] || estadoConfig['Reportado'];
                                             const fecha = reporte.fechaCreacion?.toDate
-                                                ? reporte.fechaCreacion.toDate().toLocaleString('es-CO')
-                                                : 'Sin fecha';
+                                                ? reporte.fechaCreacion.toDate().toLocaleString('es-CO') : 'Sin fecha';
                                             return (
                                                 <TableRow key={reporte.id} sx={{ '&:hover': { background: '#f9fafb' }, transition: 'background 0.2s' }}>
-                                                    <TableCell sx={{ fontSize: '13px', color: '#333' }}>{reporte.tipo}</TableCell>
-                                                    <TableCell sx={{ fontSize: '13px', color: '#333', maxWidth: 180 }}>
-                                                        {reporte.descripcion?.length > 50 ? reporte.descripcion.substring(0, 50) + '...' : reporte.descripcion}
+                                                    <TableCell sx={{ fontSize: '12px', color: '#333', whiteSpace: 'nowrap' }}>{reporte.tipo}</TableCell>
+                                                    <TableCell sx={{ fontSize: '12px', color: '#333', maxWidth: 120 }}>
+                                                        {reporte.descripcion?.length > 30 ? reporte.descripcion.substring(0, 30) + '...' : reporte.descripcion}
                                                     </TableCell>
-                                                    <TableCell sx={{ fontSize: '13px', color: '#333' }}>{reporte.ubicacionTexto}</TableCell>
-                                                    <TableCell sx={{ fontSize: '13px', color: '#333' }}>{fecha}</TableCell>
+                                                    <TableCell sx={{ fontSize: '12px', color: '#333', whiteSpace: 'nowrap' }}>{reporte.ubicacionTexto}</TableCell>
+                                                    <TableCell sx={{ fontSize: '11px', color: '#333', whiteSpace: 'nowrap' }}>{fecha}</TableCell>
                                                     <TableCell>
-                                                        <Chip label={reporte.estado} size="small" sx={{ background: estado.background, color: estado.color, fontWeight: 600, fontSize: '11px' }} />
+                                                        <Chip label={reporte.estado} size="small" sx={{ background: estado.background, color: estado.color, fontWeight: 600, fontSize: '10px' }} />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                                            <Button
-                                                                size="small"
-                                                                startIcon={<VisibilityIcon />}
-                                                                onClick={() => navigate('/reporte/' + reporte.id)}
-                                                                sx={{ color: '#2e7d32', fontWeight: 600, fontSize: '11px', textTransform: 'none', '&:hover': { background: 'rgba(46,125,50,0.08)' } }}
-                                                            >
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                            <Button size="small" startIcon={<VisibilityIcon />} onClick={() => navigate('/reporte/' + reporte.id)}
+                                                                sx={{ color: '#2e7d32', fontWeight: 600, fontSize: '11px', textTransform: 'none', whiteSpace: 'nowrap', '&:hover': { background: 'rgba(46,125,50,0.08)' } }}>
                                                                 Ver
                                                             </Button>
-                                                            <Button
-                                                                size="small"
-                                                                startIcon={<EditIcon />}
-                                                                onClick={() => abrirDialogEditar(reporte)}
-                                                                sx={{ color: '#1565c0', fontWeight: 600, fontSize: '11px', textTransform: 'none', '&:hover': { background: 'rgba(21,101,192,0.08)' } }}
-                                                            >
-                                                                Cambiar estado
+                                                            <Button size="small" startIcon={<EditIcon />} onClick={() => abrirDialogEditar(reporte)}
+                                                                sx={{ color: '#1565c0', fontWeight: 600, fontSize: '11px', textTransform: 'none', whiteSpace: 'nowrap', '&:hover': { background: 'rgba(21,101,192,0.08)' } }}>
+                                                                Estado
                                                             </Button>
                                                         </Box>
                                                     </TableCell>
@@ -230,21 +204,14 @@ export default function MisReportes() {
                 <Footer />
             </Box>
 
-            {/* Dialog cambiar estado */}
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} PaperProps={{ sx: { borderRadius: '16px', p: 1, minWidth: 320 } }}>
-                <DialogTitle sx={{ fontWeight: 700, fontSize: '16px', color: '#1a1a2e' }}>
-                    Cambiar Estado del Reporte
-                </DialogTitle>
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} PaperProps={{ sx: { borderRadius: '16px', p: 1, minWidth: { xs: 280, sm: 320 } } }}>
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '16px', color: '#1a1a2e' }}>Cambiar Estado del Reporte</DialogTitle>
                 <DialogContent>
                     <Typography sx={{ fontSize: '13px', color: '#666', mb: 2 }}>
-                        {reporteSeleccionado?.usuarioNombre?.substring(0, 80)}...
+                        {reporteSeleccionado?.usuarioNombre}
                     </Typography>
                     <FormControl fullWidth size="small">
-                        <Select
-                            value={nuevoEstado}
-                            onChange={(e) => setNuevoEstado(e.target.value)}
-                            sx={{ borderRadius: '8px' }}
-                        >
+                        <Select value={nuevoEstado} onChange={(e) => setNuevoEstado(e.target.value)} sx={{ borderRadius: '8px' }}>
                             <MenuItem value="Reportado">Reportado</MenuItem>
                             <MenuItem value="En Proceso">En Proceso</MenuItem>
                             <MenuItem value="Resuelto">Resuelto</MenuItem>
@@ -252,15 +219,9 @@ export default function MisReportes() {
                     </FormControl>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setDialogOpen(false)} sx={{ color: '#888', textTransform: 'none' }}>
-                        Cancelar
-                    </Button>
-                    <Button
-                        onClick={handleCambiarEstado}
-                        disabled={actualizando}
-                        variant="contained"
-                        sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, background: '#2e7d32', '&:hover': { background: '#1b5e20' } }}
-                    >
+                    <Button onClick={() => setDialogOpen(false)} sx={{ color: '#888', textTransform: 'none' }}>Cancelar</Button>
+                    <Button onClick={handleCambiarEstado} disabled={actualizando} variant="contained"
+                        sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, background: '#2e7d32', '&:hover': { background: '#1b5e20' } }}>
                         {actualizando ? 'Guardando...' : 'Guardar'}
                     </Button>
                 </DialogActions>

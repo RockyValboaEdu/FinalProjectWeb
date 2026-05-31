@@ -24,10 +24,10 @@ const LocationIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
 );
 
-// Importación del logo igual que en tu SignUp
+// import del logo institucional
 const logo = "https://firebasestorage.googleapis.com/v0/b/proyecto-web-65b12.firebasestorage.app/o/assets%2FLogouniamazonia.png?alt=media&token=c81e5968-00d6-4e49-9ad7-8379ef731a50";
 
-// Estilos Personalizados con Styled al igual que en tu SignUp
+// estilos Personalizados con Styled
 const HomeContainer = styled(Box)(() => ({
     minHeight: '100vh',
     display: 'flex',
@@ -37,7 +37,7 @@ const HomeContainer = styled(Box)(() => ({
 
 const HeroSection = styled(Box)(() => ({
     padding: '80px 0 60px 0',
-    background: 'radial-gradient(ellipse at 50% 30%, #f4fbf7, #e8f5e9 60%, #c8e6c9 100%)', // Gradiente usando el verde institucional muy suave
+    background: 'radial-gradient(ellipse at 50% 30%, #f4fbf7, #e8f5e9 60%, #c8e6c9 100%)', // color verde institucional
     borderBottom: '1px solid rgba(46, 125, 50, 0.08)',
 }));
 
@@ -55,16 +55,24 @@ const FeatureCard = styled(MuiCard)(() => ({
     }
 }));
 
-const TagInstitucional = styled(Box)(() => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: '#ffebee', // Alerta roja sutil
-    border: '1px solid #ffcdd2',
-    borderRadius: '20px',
-    padding: '6px 16px',
-    width: 'fit-content',
+const SiriTitle = styled(Box)(() => ({
+    textAlign: 'center',
+    marginBottom: '0px',
+    '& .title-sistema': {
+        fontSize: '31px',
+        fontWeight: 800,
+        color: '#000000',
+        letterSpacing: '0.1rem',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    },
+    '& .title-siri': {
+        fontSize: '31px',
+        fontWeight: 800,
+        color: '#c62828',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    },
 }));
+
 
 export default function Home() {
     return (
@@ -82,14 +90,7 @@ export default function Home() {
                                 alt="Logo Universidad de la Amazonia"
                                 sx={{ height: 54, objectFit: 'contain' }}
                             />
-                            <Box sx={{ display: { xs: 'none', sm: 'block' }, borderLeft: '2px solid #e0e0e0', pl: 2 }}>
-                                <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#757575', trackingLines: '0.1rem', uppercase: true }}>
-                                    SISTEMA DE REPORTES
-                                </Typography>
-                                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1b5e20' }}>
-                                    SIRI-UA
-                                </Typography>
-                            </Box>
+
                         </Box>
 
                         <Stack direction="row" spacing={2}>
@@ -126,12 +127,10 @@ export default function Home() {
                     <Grid container spacing={4} alignItems="center">
                         <Grid item xs={12} md={7}>
                             <Stack spacing={3}>
-                                <TagInstitucional>
-                                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#d32f2f' }} />
-                                    <Typography variant="body2" sx={{ color: '#c62828', fontWeight: 600, fontSize: '13px' }}>
-                                        Acceso exclusivo con correo institucional
-                                    </Typography>
-                                </TagInstitucional>
+                                <SiriTitle>
+                                    <span className="title-sistema">SISTEMA DE REPORTES <br /></span>
+                                    <span className="title-siri">SIRI-UA</span>
+                                </SiriTitle>
 
                                 <Typography variant="h2" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '32px', sm: '46px' }, color: '#1a1a2e', lineHeight: 1.2 }}>
                                     Reporta incidentes en tu campus <br />
@@ -189,6 +188,7 @@ export default function Home() {
             {/* SECCIÓN DE INFORMACIÓN ADICIONAL / REQUISITOS */}
             <Box sx={{ py: 8, backgroundColor: '#ffffff', flexGrow: 1 }}>
                 <Container maxWidth="lg">
+
                     <Box sx={{ textAlign: 'center', mb: 6 }}>
                         <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a2e', mb: 1 }}>
                             Requisitos para Generar un Reporte

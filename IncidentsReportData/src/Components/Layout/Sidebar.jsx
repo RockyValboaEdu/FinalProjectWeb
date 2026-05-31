@@ -29,64 +29,88 @@ const menuAdmin = [
     { label: 'Perfil', icon: <PersonIcon />, path: '/perfil' },
 ];
 
-export default function Sidebar({ rol }) {
+export default function Sidebar({ rol, mobileOpen, onClose }) {
     const navigate = useNavigate();
     const location = useLocation();
     const menu = rol === 'admin' ? menuAdmin : menuUsuario;
 
+    const handleNavigate = (path) => {
+        navigate(path);
+        if (onClose) onClose();
+    };
+
+    const drawerContent = (
+        <Box sx={{ overflow: 'auto', mt: 1 }}>
+            <List>
+                {menu.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                        <ListItem key={item.label} disablePadding sx={{ px: 1, mb: 0.5 }}>
+                            <ListItemButton
+                                onClick={() => handleNavigate(item.path)}
+                                sx={{
+                                    borderRadius: '10px',
+                                    background: isActive ? 'rgba(46,125,50,0.1)' : 'transparent',
+                                    color: isActive ? '#2e7d32' : '#444',
+                                    '&:hover': { background: 'rgba(46,125,50,0.07)', color: '#2e7d32' },
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                <ListItemIcon sx={{ color: isActive ? '#2e7d32' : '#777', minWidth: '36px' }}>
+                                    {item.icon}
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={item.label}
+                                    primaryTypographyProps={{ fontSize: '14px', fontWeight: isActive ? 700 : 500 }}
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
+            </List>
+        </Box>
+    );
+
     return (
-        <Drawer
-            variant="permanent"
-            sx={{
-                width: DRAWER_WIDTH,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: DRAWER_WIDTH,
-                    boxSizing: 'border-box',
-                    background: '#ffffff',
-                    borderRight: '1px solid rgba(0,0,0,0.08)',
-                },
-            }}
-        >
-            <Toolbar /> {/* Espaciado para que no quede debajo del Navbar */}
-            <Box sx={{ overflow: 'auto', mt: 1 }}>
-                <List>
-                    {menu.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <ListItem key={item.label} disablePadding sx={{ px: 1, mb: 0.5 }}>
-                                <ListItemButton
-                                    onClick={() => navigate(item.path)}
-                                    sx={{
-                                        borderRadius: '10px',
-                                        background: isActive ? 'rgba(46,125,50,0.1)' : 'transparent',
-                                        color: isActive ? '#2e7d32' : '#444',
-                                        '&:hover': {
-                                            background: 'rgba(46,125,50,0.07)',
-                                            color: '#2e7d32',
-                                        },
-                                        transition: 'all 0.2s',
-                                    }}
-                                >
-                                    <ListItemIcon sx={{
-                                        color: isActive ? '#2e7d32' : '#777',
-                                        minWidth: '36px',
-                                    }}>
-                                        {item.icon}
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={item.label}
-                                        primaryTypographyProps={{
-                                            fontSize: '14px',
-                                            fontWeight: isActive ? 700 : 500,
-                                        }}
-                                    />
-                                </ListItemButton>
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            </Box>
-        </Drawer>
+        <Box component="nav" sx={{ width: { xs: 0, sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}>
+
+            {/* Móvil: drawer temporal */}
+            <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={onClose}
+                ModalProps={{ keepMounted: true }}
+                sx={{
+                    display: { xs: 'block', sm: 'none' },
+                    '& .MuiDrawer-paper': {
+                        width: DRAWER_WIDTH,
+                        boxSizing: 'border-box',
+                        background: '#ffffff',
+                        borderRight: '1px solid rgba(0,0,0,0.08)',
+                    },
+                }}
+            >
+                <Toolbar />
+                {drawerContent}
+            </Drawer>
+
+            {/* Desktop: drawer permanente */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: 'none', sm: 'block' },
+                    '& .MuiDrawer-paper': {
+                        width: DRAWER_WIDTH,
+                        boxSizing: 'border-box',
+                        background: '#ffffff',
+                        borderRight: '1px solid rgba(0,0,0,0.08)',
+                    },
+                }}
+                open
+            >
+                <Toolbar />
+                {drawerContent}
+            </Drawer>
+        </Box>
     );
 }
