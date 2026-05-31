@@ -15,7 +15,7 @@ import DetalleReporte from './Pages/Dashboard/Admin/DetalleReporte';
 
 function App() {
   return (
-    <BrowserRouter basename="/IncidentsReportData">
+    <BrowserRouter basename="/">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
