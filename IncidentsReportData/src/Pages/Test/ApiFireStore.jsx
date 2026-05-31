@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import './ApiFireStore.css'
 import { db } from '../../FireBase/config'
 import { doc, getDoc } from "firebase/firestore";
 

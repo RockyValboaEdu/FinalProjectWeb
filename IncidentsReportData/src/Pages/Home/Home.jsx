@@ -11,21 +11,21 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import { styled } from '@mui/material/styles';
+import Footer from '../../Components/Layout/Footer';
 import { Link as RouterLink } from 'react-router-dom';
 
-import Footer from '../../Components/Layout/Footer';
 const ReportIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
 );
 const CameraIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></svg>
 );
 const LocationIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
 );
 
 // Importación del logo igual que en tu SignUp
-import logo from '../../assets/Logouniamazonia.png';
+const logo = "https://firebasestorage.googleapis.com/v0/b/proyecto-web-65b12.firebasestorage.app/o/assets%2FLogouniamazonia.png?alt=media&token=c81e5968-00d6-4e49-9ad7-8379ef731a50";
 
 // Estilos Personalizados con Styled al igual que en tu SignUp
 const HomeContainer = styled(Box)(() => ({
@@ -93,20 +93,20 @@ export default function Home() {
                         </Box>
 
                         <Stack direction="row" spacing={2}>
-                            <Button 
-                                component={RouterLink} 
-                                to="/login" 
-                                variant="text" 
+                            <Button
+                                component={RouterLink}
+                                to="/login"
+                                variant="text"
                                 sx={{ color: '#1b5e20', fontWeight: 600, textTransform: 'none' }}
                             >
                                 Iniciar Sesión
                             </Button>
-                            <Button 
-                                component={RouterLink} 
-                                to="/signup" 
-                                variant="contained" 
-                                sx={{ 
-                                    backgroundColor: '#2e7d32', 
+                            <Button
+                                component={RouterLink}
+                                to="/signup"
+                                variant="contained"
+                                sx={{
+                                    backgroundColor: '#2e7d32',
                                     textTransform: 'none',
                                     borderRadius: '8px',
                                     fontWeight: 600,
@@ -132,7 +132,7 @@ export default function Home() {
                                         Acceso exclusivo con correo institucional
                                     </Typography>
                                 </TagInstitucional>
-                                
+
                                 <Typography variant="h2" component="h1" sx={{ fontWeight: 800, fontSize: { xs: '32px', sm: '46px' }, color: '#1a1a2e', lineHeight: 1.2 }}>
                                     Reporta incidentes en tu campus <br />
                                     <span style={{ color: '#2e7d32' }}>Construyamos una mejor universidad.</span>
@@ -252,18 +252,7 @@ export default function Home() {
                     </Grid>
                 </Container>
             </Box>
-
-            {/* PIE DE PÁGINA */}
-            <Box component="footer" sx={{ bgcolor: '#1a1a2e', color: '#a0a0a0', py: 4, borderTop: '1px solid #111122', textAlign: 'center' }}>
-                <Container maxWidth="lg">
-                    <Typography variant="caption" display="block" sx={{ fontSize: '12px' }}>
-                        © {new Date().getFullYear()} Universidad de la Amazonia. Todos los derechos reservados.
-                    </Typography>
-                    <Typography variant="caption" display="block" sx={{ fontSize: '11px', mt: 0.5, color: '#707080' }}>
-                        Canal institucional para la optimización y cuidado de nuestras sedes académicas.
-                    </Typography>
-                </Container>
-            </Box>
+            <Footer />
         </HomeContainer>
     );
 }
