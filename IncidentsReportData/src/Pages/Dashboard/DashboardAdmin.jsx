@@ -24,7 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, orderBy, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where, doc, updateDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import appFirebase, { db } from '../../FireBase/config';
 
@@ -91,18 +91,40 @@ export default function DashboardAdmin() {
         setNuevoEstado(reporte.estado);
         setDialogOpen(true);
     };
+           {/*  HE QUITADO EL addDoc del handle porque he agregado el Cloud Functions
+            por lo cual lo hace automáticamente*/}
+    // const handleCambiarEstado = async () => {
+    //     if (!reporteSeleccionado || !nuevoEstado) return;
+    //     setActualizando(true);
+    //     try {
+    //     console.log('1. Iniciando cambio de estado...');
+    //     await updateDoc(doc(db, 'Incidentes', reporteSeleccionado.id), { estado: nuevoEstado });
+    //     console.log('2. Estado actualizado, creando notificación...');
+
+    //     const notifRef = await addDoc(collection(db, 'Notificaciones'), {
+    //         usuarioId: reporteSeleccionado.usuarioId,
+    //         mensaje: `Tu reporte de tipo "${reporteSeleccionado.tipo}" en ${reporteSeleccionado.ubicacionTexto} cambió a estado: ${nuevoEstado}.`,
+    //         leida: false,
+    //         fechaCreacion: serverTimestamp(),
+    //     });
+    //     console.log('3. Notificación creada:', notifRef.id);
+
+    //     setReportes((prev) => prev.map((r) =>
+    //         r.id === reporteSeleccionado.id ? { ...r, estado: nuevoEstado } : r
+    //     ));
+    //     setDialogOpen(false);
+    // } catch (error) {
+    //     console.error('ERROR DETALLADO:', error.code, error.message);
+    // } finally {
+    //     setActualizando(false);
+    // }
+    // };
 
     const handleCambiarEstado = async () => {
         if (!reporteSeleccionado || !nuevoEstado) return;
         setActualizando(true);
         try {
             await updateDoc(doc(db, 'Incidentes', reporteSeleccionado.id), { estado: nuevoEstado });
-            await addDoc(collection(db, 'Notificaciones'), {
-                usuarioId: reporteSeleccionado.usuarioId,
-                mensaje: `Tu reporte de tipo "${reporteSeleccionado.tipo}" en ${reporteSeleccionado.ubicacionTexto} cambió a estado: ${nuevoEstado}.`,
-                leida: false,
-                fechaCreacion: serverTimestamp(),
-            });
             setReportes((prev) => prev.map((r) =>
                 r.id === reporteSeleccionado.id ? { ...r, estado: nuevoEstado } : r
             ));

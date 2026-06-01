@@ -43,6 +43,8 @@ const TIPOS_INCIDENTE = ['Baño', 'Electricidad', 'Infraestructura', 'Seguridad'
 const UBICACIONES = ['Bloque 1', 'Bloque 2', 'Bloque 3', 'Bloque 4', 'Bloque 5', 'Bloque 6', 'Bloque 7', 'Biblioteca', 'Cafetería', 'Parqueadero', 'Cancha Deportiva', 'Laboratorio', 'Sala de Sistemas', 'Otro'];
 
 export default function NuevoReporte() {
+    const [coordenadas, setCoordenadas] = React.useState(null);
+    const [obteniendoGPS, setObteniendoGPS] = React.useState(false);
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const [userData, setUserData] = React.useState(null);
@@ -69,6 +71,28 @@ export default function NuevoReporte() {
         });
         return () => unsubscribe();
     }, [navigate]);
+
+    const handleObtenerUbicacion = () => {
+        if (!navigator.geolocation) {
+            alert('Tu dispositivo no soporta geolocalización.');
+            return;
+        }
+        setObteniendoGPS(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setCoordenadas({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                });
+                setObteniendoGPS(false);
+            },
+            (error) => {
+                console.error('Error GPS:', error);
+                alert('No se pudo obtener la ubicación. Verifica los permisos.');
+                setObteniendoGPS(false);
+            }
+        );
+    };
 
     const handleChange = (field) => (e) => {
         setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -110,9 +134,13 @@ export default function NuevoReporte() {
             await addDoc(collection(db, 'Incidentes'), {
                 usuarioId: user.uid,
                 usuarioNombre: userData ? userData.nombres + ' ' + userData.apellidos : '',
-                tipo: form.tipo, descripcion: form.descripcion,
-                ubicacionTexto: form.ubicacionTexto, imagenURL,
-                fechaCreacion: serverTimestamp(), estado: 'Reportado',
+                tipo: form.tipo,
+                descripcion: form.descripcion,
+                ubicacionTexto: form.ubicacionTexto,
+                coordenadas: coordenadas || null,
+                imagenURL,
+                fechaCreacion: serverTimestamp(),
+                estado: 'Reportado',
             });
             alert('¡Reporte enviado exitosamente!');
             navigate(userData?.rol === 'admin' ? '/dashboard-admin' : '/dashboard-usuario');
@@ -179,6 +207,39 @@ export default function NuevoReporte() {
                                     {UBICACIONES.map((ub) => <MenuItem key={ub} value={ub}>{ub}</MenuItem>)}
                                 </StyledSelect>
                                 {errors.ubicacionTexto && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>{errors.ubicacionTexto}</Typography>}
+
+                                {/* Botón GPS */}
+                                <Button
+                                    onClick={handleObtenerUbicacion}
+                                    disabled={obteniendoGPS}
+                                    variant="outlined"
+                                    size="small"
+                                    sx={{
+                                        mt: 1.5, borderRadius: '8px', textTransform: 'none',
+                                        fontWeight: 600, fontSize: '13px',
+                                        borderColor: coordenadas ? '#2e7d32' : 'rgba(0,0,0,0.2)',
+                                        color: coordenadas ? '#2e7d32' : '#555',
+                                        '&:hover': { borderColor: '#2e7d32', color: '#2e7d32' },
+                                    }}
+                                >
+                                    {obteniendoGPS ? 'Obteniendo ubicación...' : coordenadas ? ' Ubicación GPS obtenida' : 'Usar mi ubicación GPS (opcional)'}
+                                </Button>
+
+                                {/* Mostrar coordenadas */}
+                                {coordenadas && (
+                                    <Box sx={{ mt: 1, p: 1.5, borderRadius: '8px', background: 'rgba(46,125,50,0.05)', border: '1px solid rgba(46,125,50,0.15)' }}>
+                                        <Typography sx={{ fontSize: '12px', color: '#2e7d32', fontWeight: 600 }}>
+                                            📍 Coordenadas registradas
+                                        </Typography>
+                                        <Typography sx={{ fontSize: '12px', color: '#555', mt: 0.3 }}>
+                                            Lat: {coordenadas.lat.toFixed(6)} · Lng: {coordenadas.lng.toFixed(6)}
+                                        </Typography>
+                                        <Button size="small" onClick={() => setCoordenadas(null)}
+                                            sx={{ color: '#c62828', fontSize: '11px', textTransform: 'none', p: 0, mt: 0.5 }}>
+                                            Eliminar coordenadas
+                                        </Button>
+                                    </Box>
+                                )}
                             </FormControl>
 
                             <FormControl>

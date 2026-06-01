@@ -14,7 +14,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import appFirebase, { db } from '../../FireBase/config';
 
 const logo = "https://firebasestorage.googleapis.com/v0/b/proyecto-web-65b12.firebasestorage.app/o/assets%2FLogouniamazonia.png?alt=media&token=c81e5968-00d6-4e49-9ad7-8379ef731a50";
@@ -26,22 +26,33 @@ export default function Navbar({ userName, rol, onMenuClick }) {
     const [anchorEl, setAnchorEl] = React.useState(null);
 
     React.useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
-            try {
-                const q = query(
-                    collection(db, 'Notificaciones'),
-                    where('usuarioId', '==', user.uid),
-                    where('leida', '==', false)
-                );
-                const snap = await getDocs(q);
-                setNotificaciones(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-            } catch (error) {
-                console.error('Error cargando notificaciones:', error);
-            }
+    let unsubscribeSnapshot = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+        if (!user) return;
+
+        // cancelar snapshot anterior si existe
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+        // mostrar notificaciones en tiempo real
+        const q = query(
+            collection(db, 'Notificaciones'),
+            where('usuarioId', '==', user.uid),
+            where('leida', '==', false)
+        );
+
+        unsubscribeSnapshot = onSnapshot(q, (snap) => {
+            setNotificaciones(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        }, (error) => {
+            console.error('Error escuchando notificaciones:', error);
         });
-        return () => unsubscribe();
-    }, []);
+    });
+
+    return () => {
+        unsubscribeAuth();
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
+}, []);
 
     const handleMarcarTodasLeidas = async () => {
         try {
