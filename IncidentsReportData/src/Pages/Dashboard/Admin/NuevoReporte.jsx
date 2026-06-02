@@ -19,6 +19,7 @@ import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'fire
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import appFirebase, { db, storage } from '../../../FireBase/config';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 import Navbar from '../../../Components/Layout/Navbar';
 import Sidebar from '../../../Components/Layout/Sidebar';
@@ -54,6 +55,7 @@ export default function NuevoReporte() {
     const [errors, setErrors] = React.useState({});
     const [imagen, setImagen] = React.useState(null);
     const [previstaImagen, setPrevistaImagen] = React.useState(null);
+    const [analizando, setAnalizando] = React.useState(false);
 
     React.useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -109,6 +111,33 @@ export default function NuevoReporte() {
         const reader = new FileReader();
         reader.onloadend = () => setPrevistaImagen(reader.result);
         reader.readAsDataURL(file);
+        analizarImagenConIA(file);
+    };
+
+    const analizarImagenConIA = async (file) => {
+        setAnalizando(true);
+        try {
+            const base64 = await new Promise((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = () => res(reader.result.split(',')[1]);
+                reader.onerror = rej;
+                reader.readAsDataURL(file);
+            });
+            const functions = getFunctions();
+            const analizarImagen = httpsCallable(functions, 'analizarImagen');
+            const result = await analizarImagen({ base64, mediaType: file.type });
+            const parsed = result.data;
+            setForm((prev) => ({
+                ...prev,
+                tipo: parsed.tipo || prev.tipo,
+                descripcion: parsed.descripcion || prev.descripcion,
+                ubicacionTexto: parsed.ubicacionSugerida || prev.ubicacionTexto,
+            }));
+        } catch (error) {
+            console.error('Error analizando imagen:', error);
+        } finally {
+            setAnalizando(false);
+        }
     };
 
     const validate = () => {
@@ -272,6 +301,14 @@ export default function NuevoReporte() {
                                             sx={{ color: '#c62828', fontSize: '11px', textTransform: 'none', ml: 'auto' }}>
                                             Eliminar
                                         </Button>
+                                    </Box>
+                                )}
+                                {analizando && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, p: 1.5, borderRadius: 2, bgcolor: '#f1f8e9' }}>
+                                        <CircularProgress size={16} sx={{ color: '#2e7d32' }} />
+                                        <Typography sx={{ fontSize: '13px', color: '#2e7d32', fontWeight: 600 }}>
+                                            Analizando imagen con IA...
+                                        </Typography>
                                     </Box>
                                 )}
                                 {errors.imagen && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>{errors.imagen}</Typography>}
