@@ -30,32 +30,31 @@ exports.notificarCambioEstado = onDocumentUpdated('Incidentes/{incidenteId}', as
 exports.analizarImagen = onCall({ secrets: [anthropicKey] }, async (request) => {
     const { base64, mediaType } = request.data;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json",
-            "x-api-key": anthropicKey.value(),
-            "anthropic-version": "2023-06-01",
+            'Content-Type': 'application/json',
+            'x-api-key': anthropicKey.value(),
+            'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-            model: "claude-sonnet-4-20250514",
+            model: 'claude-haiku-4-5-20251001',
             max_tokens: 1000,
             messages: [{
-                role: "user",
+                role: 'user',
                 content: [
                     {
-                        type: "image",
-                        source: { type: "base64", media_type: mediaType, data: base64 }
+                        type: 'image',
+                        source: { type: 'base64', media_type: mediaType, data: base64 }
                     },
                     {
-                        type: "text",
+                        type: 'text',
                         text: `Eres un asistente del sistema de reportes de incidentes universitarios.
 Analiza esta imagen e identifica el problema que muestra.
 Responde SOLO en formato JSON sin markdown, así:
 {
   "tipo": "uno de: Baño, Electricidad, Infraestructura, Seguridad, Otro",
-  "descripcion": "descripción detallada del problema en español",
-  "ubicacionSugerida": "si puedes identificar el lugar, sino deja vacío"
+  "descripcion": "descripción detallada del problema en español"
 }`
                     }
                 ]
@@ -65,5 +64,6 @@ Responde SOLO en formato JSON sin markdown, así:
 
     const data = await response.json();
     const text = data.content[0].text;
-    return JSON.parse(text);
+    const clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
 });

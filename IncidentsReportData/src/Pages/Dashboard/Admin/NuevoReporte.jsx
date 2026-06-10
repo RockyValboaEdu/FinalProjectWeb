@@ -131,7 +131,6 @@ export default function NuevoReporte() {
                 ...prev,
                 tipo: parsed.tipo || prev.tipo,
                 descripcion: parsed.descripcion || prev.descripcion,
-                ubicacionTexto: parsed.ubicacionSugerida || prev.ubicacionTexto,
             }));
         } catch (error) {
             console.error('Error analizando imagen:', error);
